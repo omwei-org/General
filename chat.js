@@ -109,7 +109,7 @@
         } else if (msg.type === "message") {
           const text = await decrypt(msg.payload);
           addMessage(msg.id, text, false);
-          state.ws.send(JSON.stringify({type:"read", id:msg.id}));
+          // Intentionally do not send READ yet; keep received messages visible for testing.
         } else if (msg.type === "deleted") {
           const el = document.querySelector('[data-message-id="' + CSS.escape(msg.id) + '"]');
           if (el) el.remove();
