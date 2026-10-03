@@ -17,9 +17,7 @@
     --accent: #111111;
 }
 
-* {
-    box-sizing: border-box;
-}
+* { box-sizing: border-box; }
 
 body {
     margin: 0;
@@ -34,8 +32,6 @@ body {
     margin: auto;
     padding: 0 32px;
 }
-
-/* Header */
 
 header {
     border-bottom: 1px solid var(--line);
@@ -61,11 +57,7 @@ nav a {
     font-size: 15px;
 }
 
-/* Hero */
-
-.hero {
-    padding: 110px 0 90px;
-}
+.hero { padding: 110px 0 90px; }
 
 .hero h1 {
     font-size: 56px;
@@ -80,8 +72,6 @@ nav a {
     color: var(--muted);
 }
 
-/* Sections */
-
 section {
     padding: 80px 0;
     border-top: 1px solid var(--line);
@@ -92,15 +82,9 @@ h2 {
     margin-bottom: 25px;
 }
 
-h3 {
-    font-size: 22px;
-}
+h3 { font-size: 22px; }
 
-p {
-    max-width: 800px;
-}
-
-/* Cards */
+p { max-width: 800px; }
 
 .grid {
     display: grid;
@@ -115,17 +99,9 @@ p {
     border-radius: 12px;
 }
 
-.card ul {
-    padding-left: 20px;
-}
+.card ul { padding-left: 20px; }
 
-/* Principles */
-
-.principle {
-    margin-bottom: 35px;
-}
-
-/* Footer */
+.principle { margin-bottom: 35px; }
 
 footer {
     border-top: 1px solid var(--line);
@@ -144,331 +120,102 @@ footer {
 }
 
 @media(max-width:700px){
-
-.hero h1 {
-    font-size: 40px;
-}
-
-nav {
-    display:none;
-}
-
+    .hero h1 { font-size: 40px; }
+    nav { display:none; }
 }
 </style>
-
 </head>
 
-
 <body>
-
-
 <header>
 <div class="container nav">
-
-<div class="logo">
-OMWEI
-</div>
-
+<div class="logo">OMWEI</div>
 <nav>
 <a href="#vision">Vision</a>
 <a href="#groups">Working Groups</a>
 <a href="#principles">Principles</a>
 <a href="#community">Community</a>
+<a href="chat.html">Private Chat</a>
 <a href="https://github.com/omwei-org">GitHub</a>
 </nav>
-
 </div>
 </header>
 
-
-
 <main>
-
-
 <section class="hero">
 <div class="container">
-
-<h1>
-Open Initiative for Trustworthy Autonomous Systems
-</h1>
-
-<p>
-OMWEI explores the foundations required for autonomous systems to operate with trust, accountability, and justified authority.
-</p>
-
-<p>
-As intelligent systems move from generating information to taking actions in the real world, new models of trust and governance are required.
-</p>
-
-<a class="button" href="https://github.com/omwei-org">
-Explore OMWEI on GitHub
-</a>
-
+<h1>Open Initiative for Trustworthy Autonomous Systems</h1>
+<p>OMWEI explores the foundations required for autonomous systems to operate with trust, accountability, and justified authority.</p>
+<p>As intelligent systems move from generating information to taking actions in the real world, new models of trust and governance are required.</p>
+<a class="button" href="https://github.com/omwei-org">Explore OMWEI on GitHub</a>
 </div>
 </section>
-
-
 
 <section id="vision">
 <div class="container">
-
-<h2>
-The Challenge
-</h2>
-
-<p>
-Traditional computing focused on whether systems could calculate correctly.
-</p>
-
-<p>
-Security focused on protecting systems from unauthorized access.
-</p>
-
-<p>
-Autonomous systems introduce a deeper question:
-</p>
-
-<h3>
-When a system can decide and act, what makes that action trustworthy?
-</h3>
-
-<p>
-OMWEI brings together researchers, engineers, organizations, and practitioners exploring the principles, architectures, and practices needed for trustworthy autonomy.
-</p>
-
+<h2>The Challenge</h2>
+<p>Traditional computing focused on whether systems could calculate correctly.</p>
+<p>Security focused on protecting systems from unauthorized access.</p>
+<p>Autonomous systems introduce a deeper question:</p>
+<h3>When a system can decide and act, what makes that action trustworthy?</h3>
+<p>OMWEI brings together researchers, engineers, organizations, and practitioners exploring the principles, architectures, and practices needed for trustworthy autonomy.</p>
 </div>
 </section>
-
-
-
 
 <section id="groups">
 <div class="container">
-
-<h2>
-Working Groups
-</h2>
-
-
+<h2>Working Groups</h2>
 <div class="grid">
-
-
 <div class="card">
-
-<h3>
-Agent Identity & Integrity
-</h3>
-
-<p>
-Understanding what an autonomous system is, what it contains, and whether its operational state can be trusted.
-</p>
-
-<ul>
-<li>Agent identity</li>
-<li>Provenance</li>
-<li>Attestation</li>
-<li>Runtime integrity</li>
-</ul>
-
+<h3>Agent Identity & Integrity</h3>
+<p>Understanding what an autonomous system is, what it contains, and whether its operational state can be trusted.</p>
+<ul><li>Agent identity</li><li>Provenance</li><li>Attestation</li><li>Runtime integrity</li></ul>
 </div>
-
-
-
 <div class="card">
-
-<h3>
-Execution Governance
-</h3>
-
-<p>
-Exploring how autonomous decisions become authorized effects in the real world.
-</p>
-
-<ul>
-<li>Execution Authority</li>
-<li>Authorization claims</li>
-<li>Commit governance</li>
-<li>State transition integrity</li>
-</ul>
-
+<h3>Execution Governance</h3>
+<p>Exploring how autonomous decisions become authorized effects in the real world.</p>
+<ul><li>Execution Authority</li><li>Authorization claims</li><li>Commit governance</li><li>State transition integrity</li></ul>
 </div>
-
-
-
 <div class="card">
-
-<h3>
-Embodied Autonomy
-</h3>
-
-<p>
-Researching trustworthy autonomy in systems that interact with physical environments.
-</p>
-
-<ul>
-<li>Robotics</li>
-<li>Industrial systems</li>
-<li>Autonomous vehicles</li>
-<li>Safety-critical applications</li>
-</ul>
-
+<h3>Embodied Autonomy</h3>
+<p>Researching trustworthy autonomy in systems that interact with physical environments.</p>
+<ul><li>Robotics</li><li>Industrial systems</li><li>Autonomous vehicles</li><li>Safety-critical applications</li></ul>
 </div>
-
-
-
 <div class="card">
-
-<h3>
-Assurance & Recognition
-</h3>
-
-<p>
-Exploring how autonomous systems become trusted participants within human institutions.
-</p>
-
-<ul>
-<li>Certification</li>
-<li>Regulatory frameworks</li>
-<li>Accountability</li>
-<li>Trust models</li>
-</ul>
-
+<h3>Assurance & Recognition</h3>
+<p>Exploring how autonomous systems become trusted participants within human institutions.</p>
+<ul><li>Certification</li><li>Regulatory frameworks</li><li>Accountability</li><li>Trust models</li></ul>
 </div>
-
-
 </div>
-
 </div>
 </section>
-
-
-
-
 
 <section id="principles">
-
 <div class="container">
-
-<h2>
-Principles
-</h2>
-
-
-<div class="principle">
-
-<h3>
-Functional over technological
-</h3>
-
-<p>
-Trustworthy autonomy should be defined by required properties and guarantees, not by a specific implementation technology.
-</p>
-
+<h2>Principles</h2>
+<div class="principle"><h3>Functional over technological</h3><p>Trustworthy autonomy should be defined by required properties and guarantees, not by a specific implementation technology.</p></div>
+<div class="principle"><h3>Evidence over assumptions</h3><p>Claims about autonomous systems should be supported by verifiable evidence and reproducible evaluation.</p></div>
+<div class="principle"><h3>Separation of intelligence and authority</h3><p>The ability to make decisions and the authority to create real-world effects are distinct concepts and should not be implicitly merged.</p></div>
+<div class="principle"><h3>Open inquiry</h3><p>No architecture should be accepted without rigorous examination, comparison, and challenge.</p></div>
 </div>
-
-
-
-<div class="principle">
-
-<h3>
-Evidence over assumptions
-</h3>
-
-<p>
-Claims about autonomous systems should be supported by verifiable evidence and reproducible evaluation.
-</p>
-
-</div>
-
-
-
-<div class="principle">
-
-<h3>
-Separation of intelligence and authority
-</h3>
-
-<p>
-The ability to make decisions and the authority to create real-world effects are distinct concepts and should not be implicitly merged.
-</p>
-
-</div>
-
-
-
-<div class="principle">
-
-<h3>
-Open inquiry
-</h3>
-
-<p>
-No architecture should be accepted without rigorous examination, comparison, and challenge.
-</p>
-
-</div>
-
-
-</div>
-
 </section>
-
-
-
-
 
 <section id="community">
-
 <div class="container">
-
-<h2>
-Community
-</h2>
-
-<p>
-OMWEI is an open initiative welcoming researchers, engineers, organizations, and practitioners interested in trustworthy autonomy.
-</p>
-
-<p>
-The initiative is designed as a neutral space for collaboration across industry, academia, and society.
-</p>
-
-
-<h3>
-Contributors
-</h3>
-
-<p>
-Equinibrium contributes research and technology in the area of Execution Governance. OMWEI remains an open ecosystem for broader participation.
-</p>
-
-
+<h2>Community</h2>
+<p>OMWEI is an open initiative welcoming researchers, engineers, organizations, and practitioners interested in trustworthy autonomy.</p>
+<p>The initiative is designed as a neutral space for collaboration across industry, academia, and society.</p>
+<h3>Contributors</h3>
+<p>Equinibrium contributes research and technology in the area of Execution Governance. OMWEI remains an open ecosystem for broader participation.</p>
 </div>
-
 </section>
-
-
-
 </main>
 
-
-
 <footer>
-
 <div class="container">
-
-<p>
-OMWEI — Open Initiative for Trustworthy Autonomous Systems
-</p>
-
-<p>
-© 2026 OMWEI
-</p>
-
+<p>OMWEI — Open Initiative for Trustworthy Autonomous Systems</p>
+<p>© 2026 OMWEI</p>
 </div>
-
 </footer>
-
-
 </body>
 </html>
