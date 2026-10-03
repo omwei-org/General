@@ -73,6 +73,17 @@
         else if(msg.type==="message"){const text=await decrypt(msg.payload);console.log("[chat] displaying message",msg.id);addMessage(msg.id,text,false);}
         else if(msg.type==="deleted"){console.log("[chat] deleted",msg.id);const el=document.querySelector('[data-message-id="'+CSS.escape(msg.id)+'"]');if(el)el.remove();}
         else if(msg.type==="chat-cleared"){$("messages").replaceChildren();setStatus("peerStatus","Chat cleared. Encrypted connection remains ready.");}
+        else if(msg.type==="chat-ended"){
+          if(state.ws)state.ws.close(4002,"chat ended");
+          sessionStorage.removeItem("omwei-chat-session");
+          state.roomId=null;
+          state.token=null;
+          state.ws=null;
+          $("messages").replaceChildren();
+          hide("chat");
+          show("welcome");
+          setStatus("status","Chat ended. You can create a new private chat.");
+        }
         else if(msg.type==="peer-left"){if(!state.chatDeleted)setStatus("peerStatus","The other participant has left.");}
         else if(msg.type==="error"){setStatus("chatStatus",msg.message||"Chat error.");}
       }catch(e){setStatus("chatStatus","Unable to process a message.");}
