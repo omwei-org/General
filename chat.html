@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OMWEI — Private Chat</title>
+<meta name="description" content="Private, ephemeral two-person chat for OMWEI.">
+<link rel="stylesheet" href="chat.css">
+</head>
+<body>
+<main class="shell">
+  <header class="top">
+    <a class="brand" href="/">OMWEI</a>
+    <span class="badge">PRIVATE / EPHEMERAL</span>
+  </header>
+
+  <section id="welcome" class="panel">
+    <h1>Private chat</h1>
+    <p class="muted">A two-person encrypted room. Messages are deleted from the server when the recipient marks them as read.</p>
+    <button id="createBtn" class="primary">Create private chat</button>
+    <p id="status" class="status"></p>
+  </section>
+
+  <section id="invite" class="panel hidden">
+    <h2>Invite the other person</h2>
+    <p class="muted">Send this one-time invite link to the other participant. Keep it private.</p>
+    <textarea id="inviteLink" readonly></textarea>
+    <div class="actions">
+      <button id="copyBtn" class="primary">Copy invite</button>
+      <button id="openBtn" class="secondary">Open chat</button>
+    </div>
+    <p id="inviteStatus" class="status"></p>
+  </section>
+
+  <section id="chat" class="panel hidden">
+    <div class="chatHead">
+      <div>
+        <h2>Private chat</h2>
+        <p id="peerStatus" class="muted">Connecting…</p>
+      </div>
+      <button id="leaveBtn" class="secondary">Leave</button>
+    </div>
+    <div id="messages" class="messages" aria-live="polite"></div>
+    <form id="sendForm" class="composer">
+      <textarea id="messageInput" maxlength="4000" placeholder="Write a message…" required></textarea>
+      <button class="primary" type="submit">Send</button>
+    </form>
+    <p id="chatStatus" class="status"></p>
+  </section>
+</main>
+<script src="chat.js" defer></script>
+</body>
+</html>
