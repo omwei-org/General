@@ -72,7 +72,7 @@
   $("createBtn").addEventListener("click",()=>createRoom().catch(e=>setStatus("status",e.message)));
   $("copyBtn").addEventListener("click",async()=>{await navigator.clipboard.writeText($("inviteLink").value);setStatus("inviteStatus","Invite copied.");});
   $("openBtn").addEventListener("click",()=>startChat().catch(e=>setStatus("inviteStatus",e.message)));
-  $("deleteBtn").addEventListener("click",()=>{if(confirm("Delete this chat for both participants? This cannot be undone."))deleteChat();});
+  $("deleteBtn").addEventListener("click",()=>{if(confirm("Clear this chat for both participants? Current messages will be removed."))deleteChat();});
   $("leaveBtn").addEventListener("click",()=>{if(state.ws)state.ws.close(1000,"left");sessionStorage.removeItem("omwei-chat-session");location.href=location.pathname;});
   $("sendForm").addEventListener("submit",async(e)=>{e.preventDefault();const input=$("messageInput"),text=input.value.trim();if(!text||!state.ws||state.ws.readyState!==WebSocket.OPEN)return;try{const payload=await encrypt(text),id=randomId(18);state.ws.send(JSON.stringify({type:"send",id,payload}));addMessage(id,text,true);input.value="";}catch(err){setStatus("chatStatus",err.message);}});
 
