@@ -79,7 +79,7 @@
   }
 
   function deleteChatOnUnload() {
-    if (!state.roomId || !state.token) return;
+    if (state.chatDeleted || !state.roomId || !state.token) return;
     const body = JSON.stringify({roomId: state.roomId, token: state.token});
     try {
       navigator.sendBeacon(
