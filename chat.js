@@ -88,7 +88,22 @@
         else if(msg.type==="error"){setStatus("chatStatus",msg.message||"Chat error.");}
       }catch(e){setStatus("chatStatus","Unable to process a message.");}
     };
-    state.ws.onclose=()=>{if(state.chatDeleted)setStatus("peerStatus","Chat deleted.");else setStatus("peerStatus","Disconnected. Click Leave room to return.");};
+    state.ws.onclose=(event)=>{
+      if(event.code===4002){
+        sessionStorage.removeItem("omwei-chat-session");
+        state.roomId=null;
+        state.token=null;
+        state.ws=null;
+        $("messages").replaceChildren();
+        hide("chat");
+        show("welcome");
+        setStatus("status","Chat ended. Click Leave room to continue.");
+      }else if(state.chatDeleted){
+        setStatus("peerStatus","Chat deleted.");
+      }else{
+        setStatus("peerStatus","Disconnected. Click Leave room to return.");
+      }
+    };
     state.ws.onerror=()=>setStatus("peerStatus","Connection error.");
   }
 
