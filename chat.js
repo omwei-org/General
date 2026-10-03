@@ -2,7 +2,7 @@
   "use strict";
 
   // Set this to the deployed Cloudflare Worker endpoint.
-  const API_BASE = "https://chat-api.omwei.org";
+  const API_BASE = "https://omwei-private-chat.slevarsky.workers.dev";
 
   const $ = (id) => document.getElementById(id);
   const state = {
@@ -62,7 +62,7 @@
 
   async function createRoom() {
     setStatus("status", "Creating private room…");
-    const res = await fetch(API_BASE + "/room", {method:"POST"});
+    const res = await fetch(API_BASE + "/room", {method:"POST", headers:{"content-type":"application/json"}});
     if (!res.ok) throw new Error("Could not create room.");
     const data = await res.json();
     state.roomId = data.roomId;
