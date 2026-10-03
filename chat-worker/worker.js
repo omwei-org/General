@@ -295,19 +295,19 @@ export class ChatRoom extends DurableObject {
         const ACTIVE_RESERVATION_GRACE_MS = 5 * 60 * 1000;
         const roomAge = now - (current.expiresAt - ROOM_TTL_MS);
 
-        if (roomAge < ACTIVE_RESERVATION_GRACE_MS) {
-          const roomStub = this.env.CHAT_ROOM.get(this.env.CHAT_ROOM.idFromName(current.roomId));
-          const status = await roomStub.fetch("https://room/status", { method: "GET" });
-          let connections = -1;
-          if (status.ok) {
-            const data = await status.json();
-            connections = data.connections;
-          }
+        const roomStub = this.env.CHAT_ROOM.get(this.env.CHAT_ROOM.idFromName(current.roomId));
+        const status = await roomStub.fetch("https://room/status", { method: "GET" });
+        let connections = -1;
+        if (status.ok) {
+          const data = await status.json();
+          connections = data.connections;
+        }
+
+        if (connections > 0 && roomAge < ACTIVE_RESERVATION_GRACE_MS) {
           return json({ error: "active chat already exists", roomAge, connections, expiresAt: current.expiresAt }, 409);
         }
 
         const roomId = current.roomId;
-        const roomStub = this.env.CHAT_ROOM.get(this.env.CHAT_ROOM.idFromName(roomId));
         await roomStub.fetch("https://room/force-end", { method: "POST" });
         await this.ctx.storage.delete("active");
       }
