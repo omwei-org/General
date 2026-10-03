@@ -18,6 +18,20 @@
   async function makeKeys(){state.keyPair=await crypto.subtle.generateKey({name:"ECDH",namedCurve:"P-256"},true,["deriveBits"]);return crypto.subtle.exportKey("jwk",state.keyPair.publicKey);}
   function setStatus(id,text){$(id).textContent=text;} function show(id){$(id).classList.remove("hidden");} function hide(id){$(id).classList.add("hidden");}
 
+  async function endChat(){
+    if(!state.roomId||!state.token)return;
+    try{
+      const res=await fetch(API_BASE+"/room/end",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({roomId:state.roomId,token:state.token})});
+      if(!res.ok)throw new Error("Could not end chat.");
+      if(state.ws)state.ws.close(4002,"chat ended");
+      sessionStorage.removeItem("omwei-chat-session");
+      state.roomId=null;state.token=null;state.ws=null;
+      $("messages").replaceChildren();
+      hide("chat");show("welcome");
+      setStatus("status","Chat ended. You can create a new private chat.");
+    }catch(_){setStatus("chatStatus","Could not end chat.");}
+  }
+
   async function deleteChat(){
     if(!state.roomId||!state.token)return;
     try{
@@ -73,6 +87,7 @@
   $("copyBtn").addEventListener("click",async()=>{await navigator.clipboard.writeText($("inviteLink").value);setStatus("inviteStatus","Invite copied.");});
   $("openBtn").addEventListener("click",()=>startChat().catch(e=>setStatus("inviteStatus",e.message)));
   $("deleteBtn").addEventListener("click",()=>{if(confirm("Clear this chat for both participants? Current messages will be removed."))deleteChat();});
+  $("endBtn").addEventListener("click",()=>{if(confirm("End this private chat for both participants? The room will be closed and a new chat can be created."))endChat();});
   $("leaveBtn").addEventListener("click",()=>{if(state.ws)state.ws.close(1000,"left");sessionStorage.removeItem("omwei-chat-session");location.href=location.pathname;});
   $("sendForm").addEventListener("submit",async(e)=>{e.preventDefault();const input=$("messageInput"),text=input.value.trim();if(!text||!state.ws||state.ws.readyState!==WebSocket.OPEN)return;try{const payload=await encrypt(text),id=randomId(18);state.ws.send(JSON.stringify({type:"send",id,payload}));addMessage(id,text,true);input.value="";}catch(err){setStatus("chatStatus",err.message);}});
 
