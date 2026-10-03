@@ -60,6 +60,33 @@
   function show(id) { $(id).classList.remove("hidden"); }
   function hide(id) { $(id).classList.add("hidden"); }
 
+  async function deleteChat() {
+    if (!state.roomId || !state.token) return;
+    try {
+      await fetch(API_BASE + "/room/delete", {
+        method: "POST",
+        headers: {"content-type": "application/json"},
+        body: JSON.stringify({roomId: state.roomId, token: state.token})
+      });
+    } catch (_) {}
+    if (state.ws) {
+      try { state.ws.close(1000, "chat deleted"); } catch (_) {}
+    }
+    sessionStorage.removeItem("omwei-chat-session");
+    location.href = location.pathname;
+  }
+
+  function deleteChatOnUnload() {
+    if (!state.roomId || !state.token) return;
+    const body = JSON.stringify({roomId: state.roomId, token: state.token});
+    try {
+      navigator.sendBeacon(
+        API_BASE + "/room/delete",
+        new Blob([body], {type: "text/plain;charset=UTF-8"})
+      );
+    } catch (_) {}
+  }
+
   async function createRoom() {
     setStatus("status", "Creating private room…");
     const res = await fetch(API_BASE + "/room", {method:"POST", headers:{"content-type":"application/json"}});
@@ -116,6 +143,14 @@
       console.log("[chat] deleted", msg.id);
           const el = document.querySelector('[data-message-id="' + CSS.escape(msg.id) + '"]');
           if (el) el.remove();
+        } else if (msg.type === "chat-deleted") {
+          sessionStorage.removeItem("omwei-chat-session");
+          setStatus("peerStatus", "Chat deleted.");
+          $( "messages" ).replaceChildren();
+          if (state.ws) {
+            try { state.ws.close(1000, "chat deleted"); } catch (_) {}
+          }
+          hide("sendForm");
         } else if (msg.type === "peer-left") {
           setStatus("peerStatus", "The other participant has left.");
         } else if (msg.type === "error") {
@@ -144,6 +179,13 @@
     setStatus("inviteStatus", "Invite copied.");
   });
   $("openBtn").addEventListener("click", () => startChat().catch(e => setStatus("inviteStatus", e.message)));
+  $("deleteBtn").addEventListener("click", () => {
+    if (confirm("Delete this chat for both participants? This cannot be undone.")) {
+      deleteChat();
+    }
+  });
+  window.addEventListener("pagehide", deleteChatOnUnload);
+
   $("leaveBtn").addEventListener("click", () => {
     if (state.ws) state.ws.close(1000, "left");
     sessionStorage.removeItem("omwei-chat-session");
