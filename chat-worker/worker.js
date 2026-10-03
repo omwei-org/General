@@ -133,6 +133,44 @@ export default {
       });
     }
 
+    if (url.pathname === "/room/delete" && request.method === "POST") {
+      if (!validOrigin(request)) return json({ error: "forbidden origin" }, 403, origin);
+
+      let body;
+      try {
+        body = await request.text();
+        body = JSON.parse(body);
+      } catch {
+        return json({ error: "invalid json" }, 400, origin);
+      }
+
+      if (
+        typeof body?.roomId !== "string" ||
+        !ROOM_ID_RE.test(body.roomId) ||
+        typeof body?.token !== "string" ||
+        !/^[a-f0-9]{64}$/.test(body.token)
+      ) {
+        return json({ error: "invalid delete request" }, 400, origin);
+      }
+
+      const id = env.CHAT_ROOM.idFromName(body.roomId);
+      const stub = env.CHAT_ROOM.get(id);
+      const response = await stub.fetch("https://room/delete", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ tokenHash: await hashToken(body.token) })
+      });
+
+      const responseBody = await response.text();
+      return new Response(responseBody, {
+        status: response.status,
+        headers: {
+          "content-type": "application/json; charset=utf-8",
+          ...corsHeaders(origin)
+        }
+      });
+    }
+
     if (url.pathname.startsWith("/room/") && request.headers.get("Upgrade") === "websocket") {
       if (!validOrigin(request)) return new Response("forbidden origin", { status: 403 });
 
@@ -218,6 +256,34 @@ export class ChatRoom extends DurableObject {
       await this.ctx.storage.put("room", room);
 
       return json({ token });
+    }
+
+    if (url.pathname === "/delete" && request.method === "POST") {
+      let body;
+      try {
+        body = await request.json();
+      } catch {
+        return new Response("invalid json", { status: 400 });
+      }
+
+      const room = await this.ctx.storage.get("room");
+      if (!room || typeof body?.tokenHash !== "string") {
+        return new Response("not found", { status: 404 });
+      }
+
+      if (body.tokenHash !== room.creatorTokenHash && body.tokenHash !== room.participantBTokenHash) {
+        return new Response("forbidden", { status: 403 });
+      }
+
+      for (const ws of this.ctx.getWebSockets()) {
+        try { ws.send(JSON.stringify({ type: "chat-deleted" })); } catch {}
+        try { ws.close(4002, "chat deleted"); } catch {}
+      }
+      await this.ctx.storage.deleteAll();
+      return new Response(JSON.stringify({ ok: true }), {
+        status: 200,
+        headers: { "content-type": "application/json; charset=utf-8" }
+      });
     }
 
     if (request.headers.get("Upgrade") === "websocket") {
