@@ -28,7 +28,6 @@
       state.roomId=null;state.token=null;state.ws=null;
       $("messages").replaceChildren();
       hide("chat");show("welcome");
-      setStatus("status","Chat ended. You can create a new private chat.");
     }catch(_){setStatus("chatStatus","Could not end chat.");}
   }
 
@@ -82,7 +81,6 @@
           $("messages").replaceChildren();
           hide("chat");
           show("welcome");
-          setStatus("status","Chat ended. You can create a new private chat.");
         }
         else if(msg.type==="peer-left"){if(!state.chatDeleted)setStatus("peerStatus","The other participant has left.");}
         else if(msg.type==="error"){setStatus("chatStatus",msg.message||"Chat error.");}
@@ -97,7 +95,6 @@
         $("messages").replaceChildren();
         hide("chat");
         show("welcome");
-        setStatus("status","Chat ended. Click Leave room to continue.");
       }else if(state.chatDeleted){
         setStatus("peerStatus","Chat deleted.");
       }else{
