@@ -292,7 +292,19 @@ export class ChatRoom extends DurableObject {
       const now = Date.now();
 
       if (current && current.expiresAt > now) {
-        return json({ error: "active chat already exists" }, 409);
+        const roomId = current.roomId;
+        const roomStub = this.env.CHAT_ROOM.get(this.env.CHAT_ROOM.idFromName(roomId));
+        const status = await roomStub.fetch("https://room/status", { method: "GET" });
+
+        if (status.ok) {
+          const data = await status.json();
+          if (data.connections > 0) {
+            return json({ error: "active chat already exists" }, 409);
+          }
+        }
+
+        await roomStub.fetch("https://room/force-end", { method: "POST" });
+        await this.ctx.storage.delete("active");
       }
 
       if (current) await this.ctx.storage.delete("active");
@@ -401,6 +413,24 @@ export class ChatRoom extends DurableObject {
       await this.ctx.storage.put("room", room);
 
       return json({ token });
+    }
+
+    if (url.pathname === "/status" && request.method === "GET") {
+      return new Response(JSON.stringify({ connections: this.ctx.getWebSockets().length }), {
+        status: 200,
+        headers: { "content-type": "application/json; charset=utf-8" }
+      });
+    }
+
+    if (url.pathname === "/force-end" && request.method === "POST") {
+      for (const ws of this.ctx.getWebSockets()) {
+        try { ws.close(4002, "chat ended"); } catch {}
+      }
+      await this.ctx.storage.deleteAll();
+      return new Response(JSON.stringify({ ok: true }), {
+        status: 200,
+        headers: { "content-type": "application/json; charset=utf-8" }
+      });
     }
 
     if (url.pathname === "/end" && request.method === "POST") {
