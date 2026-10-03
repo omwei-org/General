@@ -7,6 +7,7 @@
   const $ = (id) => document.getElementById(id);
   const state = {
     roomId: null,
+    chatDeleted: false,
     token: null,
     ws: null,
     keyPair: null,
@@ -144,6 +145,7 @@
           const el = document.querySelector('[data-message-id="' + CSS.escape(msg.id) + '"]');
           if (el) el.remove();
         } else if (msg.type === "chat-deleted") {
+          state.chatDeleted = true;
           sessionStorage.removeItem("omwei-chat-session");
           setStatus("peerStatus", "Chat deleted.");
           $( "messages" ).replaceChildren();
@@ -160,7 +162,9 @@
         setStatus("chatStatus", "Unable to process a message.");
       }
     };
-    state.ws.onclose = () => setStatus("peerStatus", "Disconnected.");
+    state.ws.onclose = () => {
+      if (!state.chatDeleted) setStatus("peerStatus", "Disconnected.");
+    };
     state.ws.onerror = () => setStatus("peerStatus", "Connection error.");
   }
 
