@@ -292,18 +292,15 @@ export class ChatRoom extends DurableObject {
       const now = Date.now();
 
       if (current && current.expiresAt > now) {
-        const roomId = current.roomId;
-        const roomStub = this.env.CHAT_ROOM.get(this.env.CHAT_ROOM.idFromName(roomId));
-        const status = await roomStub.fetch("https://room/status", { method: "GET" });
+        const ACTIVE_RESERVATION_GRACE_MS = 5 * 60 * 1000;
+        const roomAge = now - (current.expiresAt - ROOM_TTL_MS);
 
-        if (status.ok) {
-          const data = await status.json();
-          if (data.connections > 0) {
-            return json({ error: "active chat already exists" }, 409);
-          }
+        if (roomAge < ACTIVE_RESERVATION_GRACE_MS) {
+          return json({ error: "active chat already exists" }, 409);
         }
 
-        // No live connections: reclaim the stale global slot.
+        const roomId = current.roomId;
+        const roomStub = this.env.CHAT_ROOM.get(this.env.CHAT_ROOM.idFromName(roomId));
         await roomStub.fetch("https://room/force-end", { method: "POST" });
         await this.ctx.storage.delete("active");
       }
