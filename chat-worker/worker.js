@@ -414,7 +414,9 @@ export class ChatRoom extends DurableObject {
     }
 
     if (url.pathname === "/status" && request.method === "GET") {
-      return new Response(JSON.stringify({ connections: this.ctx.getWebSockets().length }), {
+      const sockets = this.ctx.getWebSockets();
+      const connections = sockets.filter(ws => ws.readyState === WebSocket.OPEN).length;
+      return new Response(JSON.stringify({ connections }), {
         status: 200,
         headers: { "content-type": "application/json; charset=utf-8" }
       });
