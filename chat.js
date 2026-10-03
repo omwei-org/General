@@ -150,12 +150,12 @@
           sessionStorage.removeItem("omwei-chat-session");
           setStatus("peerStatus", "Chat deleted.");
           $( "messages" ).replaceChildren();
+          hide("sendForm");
           if (state.ws) {
             try { state.ws.close(1000, "chat deleted"); } catch (_) {}
           }
-          hide("sendForm");
         } else if (msg.type === "peer-left") {
-          setStatus("peerStatus", "The other participant has left.");
+          if (!state.chatDeleted) setStatus("peerStatus", "The other participant has left.");
         } else if (msg.type === "error") {
           setStatus("chatStatus", msg.message || "Chat error.");
         }
@@ -164,7 +164,11 @@
       }
     };
     state.ws.onclose = () => {
-      if (!state.chatDeleted) setStatus("peerStatus", "Disconnected.");
+      if (state.chatDeleted) {
+        setStatus("peerStatus", "Chat deleted.");
+      } else {
+        setStatus("peerStatus", "Disconnected.");
+      }
     };
     state.ws.onerror = () => setStatus("peerStatus", "Connection error.");
   }
