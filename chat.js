@@ -88,7 +88,7 @@
         else if(msg.type==="error"){setStatus("chatStatus",msg.message||"Chat error.");}
       }catch(e){setStatus("chatStatus","Unable to process a message.");}
     };
-    state.ws.onclose=()=>{if(state.chatDeleted)setStatus("peerStatus","Chat deleted.");else setStatus("peerStatus","Disconnected.");};
+    state.ws.onclose=()=>{if(state.chatDeleted)setStatus("peerStatus","Chat deleted.");else setStatus("peerStatus","Disconnected. Click Leave room to return.");};
     state.ws.onerror=()=>setStatus("peerStatus","Connection error.");
   }
 
