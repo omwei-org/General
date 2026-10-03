@@ -5,7 +5,7 @@ const MESSAGE_TTL_MS = 24 * 60 * 60 * 1000;
 const MAX_MESSAGE_BYTES = 12000;
 const MAX_CIPHERTEXT_BYTES = 10000;
 const MAX_ID_LENGTH = 64;
-const ALLOWED_ORIGIN = "https://omwei.org";
+const ALLOWED_ORIGINS = new Set(["https://omwei.org", "http://localhost:8080"]);
 const ROOM_ID_RE = /^[a-f0-9]{32}$/;
 const MESSAGE_ID_RE = /^[A-Za-z0-9_-]{20,64}$/;
 const B64U_RE = /^[A-Za-z0-9_-]+$/;
@@ -17,7 +17,7 @@ function corsHeaders(origin) {
     "cache-control": "no-store",
     "vary": "Origin"
   };
-  if (origin === ALLOWED_ORIGIN) headers["access-control-allow-origin"] = ALLOWED_ORIGIN;
+  if (ALLOWED_ORIGINS.has(origin)) headers["access-control-allow-origin"] = origin;
   return headers;
 }
 
@@ -50,7 +50,7 @@ async function hashToken(token) {
 }
 
 function validOrigin(request) {
-  return request.headers.get("Origin") === ALLOWED_ORIGIN;
+  return ALLOWED_ORIGINS.has(request.headers.get("Origin"));
 }
 
 function validMessagePayload(payload) {
@@ -68,7 +68,7 @@ export default {
     const origin = request.headers.get("Origin");
 
     if (request.method === "OPTIONS") {
-      if (origin !== ALLOWED_ORIGIN) return new Response(null, { status: 403 });
+      if (!ALLOWED_ORIGINS.has(origin)) return new Response(null, { status: 403 });
       return new Response(null, { status: 204, headers: corsHeaders(origin) });
     }
 
@@ -221,7 +221,7 @@ export class ChatRoom extends DurableObject {
     }
 
     if (request.headers.get("Upgrade") === "websocket") {
-      if (request.headers.get("Origin") !== ALLOWED_ORIGIN) {
+      if (!ALLOWED_ORIGINS.has(request.headers.get("Origin"))) {
         return new Response("forbidden origin", { status: 403 });
       }
 
