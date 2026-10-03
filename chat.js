@@ -63,6 +63,7 @@
 
   async function deleteChat() {
     if (!state.roomId || !state.token) return;
+    state.chatDeleted = true;
     try {
       await fetch(API_BASE + "/room/delete", {
         method: "POST",
