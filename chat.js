@@ -20,11 +20,11 @@
 
   async function deleteChat(){
     if(!state.roomId||!state.token)return;
-    state.chatDeleted=true;
-    try{await fetch(API_BASE+"/room/delete",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({roomId:state.roomId,token:state.token})});}catch(_){}
-    if(state.ws){try{state.ws.close(1000,"chat deleted");}catch(_){}}
-    sessionStorage.removeItem("omwei-chat-session");
-    setChatDeletedUI();
+    try{
+      await fetch(API_BASE+"/room/clear",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({roomId:state.roomId,token:state.token})});
+      $("messages").replaceChildren();
+      setStatus("peerStatus","Chat cleared. Encrypted connection remains ready.");
+    }catch(_){setStatus("chatStatus","Could not clear chat.");}
   }
 
   async function createRoom(){
@@ -58,7 +58,7 @@
         if(msg.type==="peer-key"){state.peerPublicKey=msg.key;state.cryptoKey=await deriveKey(msg.key);setStatus("peerStatus","Encrypted connection ready.");}
         else if(msg.type==="message"){const text=await decrypt(msg.payload);console.log("[chat] displaying message",msg.id);addMessage(msg.id,text,false);}
         else if(msg.type==="deleted"){console.log("[chat] deleted",msg.id);const el=document.querySelector('[data-message-id="'+CSS.escape(msg.id)+'"]');if(el)el.remove();}
-        else if(msg.type==="chat-deleted"){state.chatDeleted=true;sessionStorage.removeItem("omwei-chat-session");setStatus("peerStatus","Chat deleted.");$("messages").replaceChildren();setChatDeletedUI();if(state.ws){try{state.ws.close(1000,"chat deleted");}catch(_){}}}
+        else if(msg.type==="chat-cleared"){$("messages").replaceChildren();setStatus("peerStatus","Chat cleared. Encrypted connection remains ready.");}
         else if(msg.type==="peer-left"){if(!state.chatDeleted)setStatus("peerStatus","The other participant has left.");}
         else if(msg.type==="error"){setStatus("chatStatus",msg.message||"Chat error.");}
       }catch(e){setStatus("chatStatus","Unable to process a message.");}
