@@ -277,7 +277,6 @@ export class ChatRoom extends DurableObject {
 
       for (const ws of this.ctx.getWebSockets()) {
         try { ws.send(JSON.stringify({ type: "chat-deleted" })); } catch {}
-        try { ws.close(4002, "chat deleted"); } catch {}
       }
       await this.ctx.storage.deleteAll();
       return new Response(JSON.stringify({ ok: true }), {
