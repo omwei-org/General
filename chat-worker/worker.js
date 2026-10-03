@@ -303,6 +303,7 @@ export class ChatRoom extends DurableObject {
           }
         }
 
+        // No live connections: reclaim the stale global slot.
         await roomStub.fetch("https://room/force-end", { method: "POST" });
         await this.ctx.storage.delete("active");
       }
