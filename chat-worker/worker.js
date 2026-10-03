@@ -296,7 +296,14 @@ export class ChatRoom extends DurableObject {
         const roomAge = now - (current.expiresAt - ROOM_TTL_MS);
 
         if (roomAge < ACTIVE_RESERVATION_GRACE_MS) {
-          return json({ error: "active chat already exists" }, 409);
+          const roomStub = this.env.CHAT_ROOM.get(this.env.CHAT_ROOM.idFromName(current.roomId));
+          const status = await roomStub.fetch("https://room/status", { method: "GET" });
+          let connections = -1;
+          if (status.ok) {
+            const data = await status.json();
+            connections = data.connections;
+          }
+          return json({ error: "active chat already exists", roomAge, connections, expiresAt: current.expiresAt }, 409);
         }
 
         const roomId = current.roomId;
