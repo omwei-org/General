@@ -102,15 +102,18 @@
     state.ws.onmessage = async (event) => {
       try {
         const msg = JSON.parse(event.data);
+    console.log("[chat] WS <-", msg.type, msg);
         if (msg.type === "peer-key") {
           state.peerPublicKey = msg.key;
           state.cryptoKey = await deriveKey(msg.key);
           setStatus("peerStatus", "Encrypted connection ready.");
         } else if (msg.type === "message") {
           const text = await decrypt(msg.payload);
-          addMessage(msg.id, text, false);
+          console.log("[chat] displaying message", msg.id);
+      addMessage(msg.id, text, false);
           // Intentionally do not send READ yet; keep received messages visible for testing.
         } else if (msg.type === "deleted") {
+      console.log("[chat] deleted", msg.id);
           const el = document.querySelector('[data-message-id="' + CSS.escape(msg.id) + '"]');
           if (el) el.remove();
         } else if (msg.type === "peer-left") {
