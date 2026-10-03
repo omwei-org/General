@@ -75,23 +75,20 @@ export default {
     if (url.pathname === "/room" && request.method === "POST") {
       if (!validOrigin(request)) return json({ error: "forbidden origin" }, 403, origin);
 
-      const roomId = randomToken(16);
-      const creatorToken = randomToken();
-      const inviteToken = randomToken();
-
-      const id = env.CHAT_ROOM.idFromName(roomId);
-      const stub = env.CHAT_ROOM.get(id);
-      const r = await stub.fetch("https://room/init", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({
-          creatorTokenHash: await hashToken(creatorToken),
-          inviteTokenHash: await hashToken(inviteToken)
-        })
+      const registryId = env.CHAT_ROOM.idFromName("__active__");
+      const registry = env.CHAT_ROOM.get(registryId);
+      const response = await registry.fetch("https://registry/reserve", {
+        method: "POST"
       });
 
-      if (!r.ok) return json({ error: "room creation failed" }, 500, origin);
-      return json({ roomId, token: creatorToken, inviteToken }, 200, origin);
+      const responseBody = await response.text();
+      return new Response(responseBody, {
+        status: response.status,
+        headers: {
+          "content-type": "application/json; charset=utf-8",
+          ...corsHeaders(origin)
+        }
+      });
     }
 
     if (url.pathname === "/room/join" && request.method === "POST") {
@@ -234,6 +231,62 @@ export class ChatRoom extends DurableObject {
 
   async fetch(request) {
     const url = new URL(request.url);
+
+    if (url.pathname === "/reserve" && request.method === "POST") {
+      const current = await this.ctx.storage.get("active");
+      const now = Date.now();
+
+      if (current && current.expiresAt > now) {
+        return json({ error: "active chat already exists" }, 409);
+      }
+
+      if (current) await this.ctx.storage.delete("active");
+
+      const roomId = randomToken(16);
+      const creatorToken = randomToken();
+      const inviteToken = randomToken();
+      const id = this.env.CHAT_ROOM.idFromName(roomId);
+      const roomStub = this.env.CHAT_ROOM.get(id);
+
+      const initialized = await roomStub.fetch("https://room/init", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          creatorTokenHash: await hashToken(creatorToken),
+          inviteTokenHash: await hashToken(inviteToken)
+        })
+      });
+
+      if (!initialized.ok) {
+        return json({ error: "room creation failed" }, 500);
+      }
+
+      const expiresAt = now + ROOM_TTL_MS;
+      await this.ctx.storage.put("active", { roomId, expiresAt });
+      await this.ctx.storage.setAlarm(expiresAt);
+
+      return json({ roomId, token: creatorToken, inviteToken });
+    }
+
+    if (url.pathname === "/release" && request.method === "POST") {
+      let body;
+      try {
+        body = await request.json();
+      } catch {
+        return new Response("invalid json", { status: 400 });
+      }
+
+      const current = await this.ctx.storage.get("active");
+      if (current && body?.roomId === current.roomId) {
+        await this.ctx.storage.delete("active");
+        await this.ctx.storage.deleteAlarm();
+      }
+
+      return new Response(JSON.stringify({ ok: true }), {
+        status: 200,
+        headers: { "content-type": "application/json; charset=utf-8" }
+      });
+    }
 
     if (url.pathname === "/init" && request.method === "POST") {
       const existing = await this.ctx.storage.get("room");
@@ -505,6 +558,16 @@ export class ChatRoom extends DurableObject {
   async alarm() {
     const now = Date.now();
     const room = await this.ctx.storage.get("room");
+    const active = await this.ctx.storage.get("active");
+
+    if (active && !room) {
+      if (active.expiresAt <= now) {
+        await this.ctx.storage.delete("active");
+      } else {
+        await this.ctx.storage.setAlarm(active.expiresAt);
+      }
+      return;
+    }
 
     if (!room || room.createdAt + ROOM_TTL_MS <= now) {
       for (const ws of this.ctx.getWebSockets()) {
