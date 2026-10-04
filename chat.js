@@ -22,13 +22,13 @@
     if(!state.roomId||!state.token)return;
     try{
       const res=await fetch(API_BASE+"/room/end",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({roomId:state.roomId,token:state.token})});
-      if(!res.ok)throw new Error("Could not end chat.");
+      if(!res.ok)throw new Error("Could not end session.");
       if(state.ws)state.ws.close(4002,"chat ended");
       sessionStorage.removeItem("omwei-chat-session");
       state.roomId=null;state.token=null;state.ws=null;
       $("messages").replaceChildren();
       hide("chat");show("welcome");
-    }catch(_){setStatus("chatStatus","Could not end chat.");}
+    }catch(_){setStatus("chatStatus","Could not end session.");}
   }
 
   async function deleteChat(){
@@ -36,19 +36,19 @@
     try{
       await fetch(API_BASE+"/room/clear",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({roomId:state.roomId,token:state.token})});
       $("messages").replaceChildren();
-      setStatus("peerStatus","Chat cleared. Encrypted connection remains ready.");
-    }catch(_){setStatus("chatStatus","Could not clear chat.");}
+      setStatus("peerStatus","Session cleared. Encrypted connection remains ready.");
+    }catch(_){setStatus("chatStatus","Could not clear session.");}
   }
 
   async function createRoom(){
-    setStatus("status","Creating private room…");
+    setStatus("status","Creating AI session…");
     const res=await fetch(API_BASE+"/room",{method:"POST",headers:{"content-type":"application/json"}});
-    if(!res.ok)throw new Error("Could not create room.");
+    if(!res.ok)throw new Error("Could not create session.");
     const data=await res.json();state.roomId=data.roomId;state.token=data.token;
     const invite=location.origin+location.pathname+"#room="+encodeURIComponent(state.roomId)+"&invite="+encodeURIComponent(data.inviteToken);
     $("inviteLink").value=invite;hide("welcome");show("invite");
     sessionStorage.setItem("omwei-chat-session",JSON.stringify({roomId:state.roomId,token:state.token}));
-    setStatus("inviteStatus","Invite created. The link is one-time and should be shared privately.");
+    setStatus("inviteStatus","AI session invite created. The link is one-time and should be shared privately.");
   }
 
   async function joinFromInvite(roomId,inviteToken){
@@ -71,7 +71,7 @@
         if(msg.type==="peer-key"){state.peerPublicKey=msg.key;state.cryptoKey=await deriveKey(msg.key);setStatus("peerStatus","Encrypted connection ready.");}
         else if(msg.type==="message"){const text=await decrypt(msg.payload);console.log("[chat] displaying message",msg.id);addMessage(msg.id,text,false);}
         else if(msg.type==="deleted"){console.log("[chat] deleted",msg.id);const el=document.querySelector('[data-message-id="'+CSS.escape(msg.id)+'"]');if(el)el.remove();}
-        else if(msg.type==="chat-cleared"){$("messages").replaceChildren();setStatus("peerStatus","Chat cleared. Encrypted connection remains ready.");}
+        else if(msg.type==="chat-cleared"){$("messages").replaceChildren();setStatus("peerStatus","Session cleared. Encrypted connection remains ready.");}
         else if(msg.type==="chat-ended"){
           if(state.ws)state.ws.close(4002,"chat ended");
           sessionStorage.removeItem("omwei-chat-session");
@@ -83,7 +83,7 @@
           show("welcome");
         }
         else if(msg.type==="peer-left"){if(!state.chatDeleted)setStatus("peerStatus","The other participant has left.");}
-        else if(msg.type==="error"){setStatus("chatStatus",msg.message||"Chat error.");}
+        else if(msg.type==="error"){setStatus("chatStatus",msg.message||"Session error.");}
       }catch(e){setStatus("chatStatus","Unable to process a message.");}
     };
     state.ws.onclose=(event)=>{
@@ -96,21 +96,21 @@
         hide("chat");
         show("welcome");
       }else if(state.chatDeleted){
-        setStatus("peerStatus","Chat deleted.");
+        setStatus("peerStatus","Session deleted.");
       }else{
-        setStatus("peerStatus","Disconnected. Click Leave room to return.");
+        setStatus("peerStatus","Disconnected.");
       }
     };
     state.ws.onerror=()=>setStatus("peerStatus","Connection error.");
   }
 
-  function setChatDeletedUI(){$("messageInput").disabled=true;$("messageInput").placeholder="Chat deleted.";$("sendForm").querySelector('button[type="submit"]').disabled=true;} function addMessage(id,text,mine){const el=document.createElement("div");el.className="message "+(mine?"mine":"theirs");el.dataset.messageId=id;el.textContent=text;$("messages").appendChild(el);$("messages").scrollTop=$("messages").scrollHeight;}
+  function setChatDeletedUI(){$("messageInput").disabled=true;$("messageInput").placeholder="Session deleted.";$("sendForm").querySelector('button[type="submit"]').disabled=true;} function addMessage(id,text,mine){const el=document.createElement("div");el.className="message "+(mine?"mine":"theirs");el.dataset.messageId=id;el.textContent=text;$("messages").appendChild(el);$("messages").scrollTop=$("messages").scrollHeight;}
 
   $("createBtn").addEventListener("click",()=>createRoom().catch(e=>setStatus("status",e.message)));
   $("copyBtn").addEventListener("click",async()=>{await navigator.clipboard.writeText($("inviteLink").value);setStatus("inviteStatus","Invite copied.");});
   $("openBtn").addEventListener("click",()=>startChat().catch(e=>setStatus("inviteStatus",e.message)));
-  $("deleteBtn").addEventListener("click",()=>{if(confirm("Clear this chat for both participants? Current messages will be removed."))deleteChat();});
-  $("endBtn").addEventListener("click",()=>{if(confirm("End this private chat for both participants? The room will be closed and a new chat can be created."))endChat();});
+  $("deleteBtn").addEventListener("click",()=>{if(confirm("Clear this session for both participants? Current messages will be removed."))deleteChat();});
+  $("endBtn").addEventListener("click",()=>{if(confirm("End this AI session for both participants? The session will be closed and a new session can be created."))endChat();});
   $("sendForm").addEventListener("submit",async(e)=>{e.preventDefault();const input=$("messageInput"),text=input.value.trim();if(!text||!state.ws||state.ws.readyState!==WebSocket.OPEN)return;try{const payload=await encrypt(text),id=randomId(18);state.ws.send(JSON.stringify({type:"send",id,payload}));addMessage(id,text,true);input.value="";}catch(err){setStatus("chatStatus",err.message);}});
 
   (async()=>{const hash=new URLSearchParams(location.hash.slice(1)),room=hash.get("room"),invite=hash.get("invite");if(room&&invite){try{await joinFromInvite(room,invite);}catch(e){setStatus("status",e.message);}return;}const saved=sessionStorage.getItem("omwei-chat-session");if(saved){try{const s=JSON.parse(saved);state.roomId=s.roomId;state.token=s.token;await startChat();}catch(_){}}})();
